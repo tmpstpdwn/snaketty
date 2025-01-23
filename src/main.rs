@@ -1,55 +1,33 @@
-
 // IMPORTS
-
 use std::io::Write;
 use std::{thread, time};
 use k_board::{keyboard::Keyboard, keys::Keys};
 use rand::Rng;
 
 // Pair Struct
-
+#[derive(Clone, Copy)]
 struct Pair {
     x: i32,
     y: i32,
 } 
 
-impl Pair {
-    fn clone(&self) -> Self {
-        Pair {
-            x: self.x,
-            y: self.y,
-        }
-    }
-}
-
 // Object Struct
-
+#[derive(Clone, Copy)]
 struct Object {
     pos: Pair,
     dir: Pair,
     chr: char,
 }
 
-impl Object {
-    fn clone(&self) -> Self {
-        Object {
-            pos: self.pos.clone(),
-            dir: self.dir.clone(),
-            chr: self.chr,
-        }
-    }
-}
-
 // Clear screen fn.
-
 fn clear_screen() {
     print!("\x1B[2J\x1B[H");
     std::io::stdout().flush().unwrap();
 }
 
 // Render fn.
-
 fn render(width: &u32, height: &u32, objects: &Vec<Object>, score: &u32) {
+
     clear_screen();
 
     println!("\nSNAKE-GAME\n----------");
@@ -109,7 +87,6 @@ fn render(width: &u32, height: &u32, objects: &Vec<Object>, score: &u32) {
 }
 
 // Main fn.
-
 fn main() {
 
     let width: u32 = 100;
@@ -135,6 +112,8 @@ fn main() {
         chr: 'O'
     };
 
+    let mut is_running: bool = true;
+
     loop {
 
         // Objects to be rendered.
@@ -143,8 +122,8 @@ fn main() {
         // Body movement.
         let mut index = snake.len() - 1;
         while index > 0 {
-            snake[index].pos = snake[index - 1].pos.clone();
-            snake[index].dir = snake[index - 1].dir.clone();
+            snake[index].pos = snake[index - 1].pos;
+            snake[index].dir = snake[index - 1].dir;
             index -= 1;
         }
 
@@ -153,23 +132,19 @@ fn main() {
 
         for key in Keyboard::new() {
             match key {
-                Keys::Up => {
-                    snake_head.dir.x =  0;
-                    snake_head.dir.y = -1;
-                },
-                Keys::Down => {
-                    snake_head.dir.x =  0;
-                    snake_head.dir.y =  1;
-                },
-                Keys::Left => {
-                    snake_head.dir.x = -1;
-                    snake_head.dir.y =  0;
-                },
-                Keys::Right => {
-                    snake_head.dir.x =  1;
-                    snake_head.dir.y =  0;
-                },
-                _ => break
+                Keys::Up if snake_head.dir.y == 0 => {
+                    snake_head.dir = Pair { x: 0, y: -1 };
+                }
+                Keys::Down if snake_head.dir.y == 0 => {
+                    snake_head.dir = Pair { x: 0, y: 1 };
+                }
+                Keys::Left if snake_head.dir.x == 0 => {
+                    snake_head.dir = Pair { x: -1, y: 0 };
+                }
+                Keys::Right if snake_head.dir.x == 0 => {
+                    snake_head.dir = Pair { x: 1, y: 0 };
+                }
+                _ => break,
             }
         }
 
@@ -177,53 +152,48 @@ fn main() {
         snake_head.pos.y += snake_head.dir.y;
 
         // Screen border teleportation.
-        if snake_head.pos.x > width as i32 - 1 {
-            snake_head.pos.x = 0;
-        } else if snake_head.pos.x < 0 {
-            snake_head.pos.x = width as i32 - 1;
-        }
+        snake_head.pos.x = (snake_head.pos.x + width as i32) % width as i32;
+        snake_head.pos.y = (snake_head.pos.y + height as i32) % height as i32;
 
-        if snake_head.pos.y > height as i32 - 1 {
-            snake_head.pos.y = 0;
-        } else if snake_head.pos.y < 0 {
-            snake_head.pos.y = height as i32 - 1;
+        // Collition with self.
+        let snake_head: Object = snake_head.clone();
+        for snake_block in &snake[1..] {
+            if snake_block.pos.x == snake_head.pos.x && snake_block.pos.y == snake_head.pos.y {
+                is_running = false;
+                break;
+            }
+        }
+        if !is_running {
+            break;
         }
 
         // Collition with food.
         if food.pos.x == snake_head.pos.x && food.pos.y == snake_head.pos.y {
 
             // Change food coord.
-            food.pos.x = rng.gen_range(0..=width) as i32;
-            food.pos.y = rng.gen_range(0..=height) as i32;
+            loop {
+                food.pos.x = rng.gen_range(0..=width) as i32;
+                food.pos.y = rng.gen_range(0..=height) as i32;
+
+                if !snake.iter().any(|snake_block| food.pos.x == snake_block.pos.x && food.pos.y == snake_block.pos.y) {
+                    break;
+                }
+            }
 
             // Update score.
             score += 1;
 
             // Add a new block.
             let tail: &Object = snake.last().unwrap();
-            let mut x: i32 = 0;
-            let mut y: i32 = 0;
-
-            if tail.dir.x > 0 {
-                x = tail.pos.x - 1;
-                y = tail.pos.y;
-            } else if tail.dir.x < 0 {
-                x = tail.pos.x + 1;
-                y = tail.pos.y;
-            }
-
-            if tail.dir.y > 0 {
-                x = tail.pos.x;
-                y = tail.pos.y - 1;
-            } else if tail.dir.y < 0 {
-                x = tail.pos.x;
-                y = tail.pos.y + 1;
-            }
+            let new_pos = Pair {
+                x: tail.pos.x - tail.dir.x,
+                y: tail.pos.y - tail.dir.y,
+            };
 
             snake.push(
                 Object {
-                    pos: Pair { x: x, y: y },
-                    dir: tail.dir.clone(),
+                    pos: new_pos,
+                    dir: tail.dir,
                     chr: 'X'
                 }
             );
