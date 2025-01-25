@@ -64,20 +64,20 @@ impl Screen {
     // Render fn.
     fn render(&self, objects: &Vec<Object>) {
 
-        Screen::clear_screen();
-
+        // O/P String.
         let mut output: String = String::new();
 
         // pady.
-        output.push_str(&" \n".repeat(self.pady as usize));
+        output.push_str(&"\n".repeat(self.pady as usize));
 
         // Header.
         let header_padding = (self.width as usize - self.header.len()) / 2;
+        let remaining_padding = self.width as usize - (header_padding + self.header.len());
         output.push_str(&" ".repeat(self.padx as usize));
         output.push_str("┌"); 
         output.push_str(&"─".repeat(header_padding));
         output.push_str(&self.header);
-        output.push_str(&"─".repeat(header_padding));
+        output.push_str(&"─".repeat(remaining_padding));
         output.push_str("┐\n");
 
         // Screen.
@@ -103,16 +103,18 @@ impl Screen {
 
         // Footer.
         let footer_padding = (self.width as usize - self.footer.len()) / 2;
+        let remaining_padding = self.width as usize - (footer_padding + self.footer.len());
         output.push_str(&" ".repeat(self.padx as usize));
         output.push_str("└");
         output.push_str(&"─".repeat(footer_padding));
         output.push_str(&self.footer);
-        output.push_str(&"─".repeat(footer_padding));
+        output.push_str(&"─".repeat(remaining_padding));
         output.push_str("┘\n");
 
         // pady.
-        output.push_str(&" \n".repeat(self.pady as usize));
+        output.push_str(&"\n".repeat(self.pady as usize));
 
+        Screen::clear_screen();
         print!("{}", output);
         std::io::stdout().flush().unwrap();
     }
@@ -169,6 +171,10 @@ fn main() {
 
             for key in Keyboard::new() {
                 match key {
+                    Keys::Escape => {
+                        is_running = false;
+                        break;
+                    },
                     Keys::Up if snake_head.dir.y == 0 => {
                         snake_head.dir = Pair { x: 0, y: -1 };
                     }
@@ -233,7 +239,12 @@ fn main() {
                 );
             }
 
-            screen.footer = format!(" Score: {} ", score);
+            if score == 0 {
+                screen.footer = String::from(" Use arrow keys for navigation || Escape to quit. ");
+            } else {
+                screen.footer = format!(" Score: {} ", score);
+            }
+
 
         } else {
             screen.footer = String::from(" Space to start || Escape to quit. ");
