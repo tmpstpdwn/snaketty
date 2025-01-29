@@ -2,8 +2,7 @@
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// the Free Software Foundation, version 3 of the License.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,7 +11,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 
 // IMPORTS.
 use std::io::Write;
@@ -163,12 +161,18 @@ impl Screen {
     }
 }
 
+// Gamesate enum.
+enum GameState {
+    Playing,
+    GameOver,
+}
+
 // Main fn.
 fn main() {
     print!("{}", cursor::Hide);
 
     let mut screen = Screen::new().unwrap_or_else(|| {
-        eprintln!("Failed to create screen: invalid terminal size");
+        eprintln!("Failed to create screen: terminal size too small");
         std::process::exit(1);
     });
 
@@ -195,11 +199,11 @@ fn main() {
 
     let mut first_hit: bool = true;
     let mut is_running: bool = true;
-    let mut game_is_on: bool = false;
+    let mut gamestate: GameState = GameState::GameOver;
 
     while is_running {
 
-        if game_is_on {
+        if let GameState::Playing = gamestate {
 
             // Body movement.
             let mut index = snake.len() - 1;
@@ -262,7 +266,7 @@ fn main() {
             // Collition with self.
             for snake_block in &snake[1..] {
                 if snake_block.pos.x == snake[0].pos.x && snake_block.pos.y == snake[0].pos.y {
-                    game_is_on = false;
+                    gamestate = GameState::GameOver;
                     break;
                 }
             }
@@ -279,7 +283,7 @@ fn main() {
                 match key {
                     Keys::Escape => is_running = false,
                     Keys::Space => {
-                        game_is_on = true;
+                        gamestate = GameState::Playing;
                         if !first_hit {
                             score = 0;
                             food.pos.x = rng.gen_range(0..screen.width) as i32;
