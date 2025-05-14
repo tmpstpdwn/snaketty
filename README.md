@@ -37,13 +37,6 @@ cargo run --release
 - The snake wraps around screen edges.
 - Press Escape to exit anytime.
 
-## Configuration
-
-Modify src/main.rs to:
-- Change FPS (line with let fps: u64 = 60;).
-- Adjust game window size percentage (look for 0.8 in Screen::new).
-- Modify characters used for snake and food (search for 'X' and 'O').
-
 ## LICENSE
 
-This project is licensed under [GPLv3](LICENSE).
+This project is licensed under GPL3 [LICENSE](LICENSE).
