@@ -2,10 +2,6 @@
 
 A classic Snake game implementation in Rust that runs directly in your terminal!
 
-## Features
-- Classic snake gameplay mechanics.
-- Screen size adaptation.
-
 ## Dependencies
 - Rust (1.65+).
 - Cargo.
