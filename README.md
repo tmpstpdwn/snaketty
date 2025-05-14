@@ -2,8 +2,6 @@
 
 A classic Snake game implementation in Rust that runs directly in your terminal!
 
-![Gameplay Demo](snaketty.gif)
-
 ## Features
 - Classic snake gameplay mechanics.
 - Screen size adaptation.
@@ -32,7 +30,7 @@ cargo run --release
 ## How to Play
 
 - Start the game with Space.
-- Collect food (O) to grow and increase score.
+- Collect food to grow and increase score.
 - Avoid colliding with yourself.
 - The snake wraps around screen edges.
 - Press Escape to exit anytime.
