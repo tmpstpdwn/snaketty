@@ -18,7 +18,7 @@ A classic Snake game implementation in Rust that runs directly in your terminal!
 ## Installation
 Ensure Rust and Cargo are installed:
 ```bash
-git clone https://github.com/yourusername/snaketty.git
+git clone https://github.com/tmpstpdwn/snaketty.git
 cd snaketty
 cargo run --release
 ```
